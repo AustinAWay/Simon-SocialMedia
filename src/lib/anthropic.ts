@@ -26,12 +26,12 @@ export async function ask(opts: {
   user: string;
   model?: string;
   maxTokens?: number;
+  /** Accepted for call-site clarity but not sent — newest models deprecate temperature. */
   temperature?: number;
 }): Promise<string> {
   const res = await getClient().messages.create({
     model: opts.model ?? CLAUDE.model,
     max_tokens: opts.maxTokens ?? CLAUDE.maxTokens,
-    temperature: opts.temperature ?? 0.6,
     system: opts.system,
     messages: [{ role: "user", content: opts.user }],
   });
@@ -66,7 +66,6 @@ export async function askTool<T>(opts: {
   const res = await getClient().messages.create({
     model: opts.model ?? CLAUDE.model,
     max_tokens: opts.maxTokens ?? CLAUDE.maxTokens,
-    temperature: opts.temperature ?? 0.4,
     system: opts.system,
     tools: [{ name: opts.toolName, description: opts.toolDescription, input_schema: opts.schema as Anthropic.Tool.InputSchema }],
     tool_choice: { type: "tool", name: opts.toolName },

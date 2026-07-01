@@ -38,9 +38,9 @@ export const HF = {
   avatarModel: "seedance_2_0",
   /** "720p" for cheap iteration, "1080p" for final delivery. Overridable via --quality. */
   avatarResolution: "720p" as "720p" | "1080p" | "480p" | "4k",
-  /** Seedance hard limits: 3–15s per clip. We chunk audio to sit inside this. */
+  /** Seedance hard limits: ~3–15s per clip. We chunk audio to sit inside this. */
   avatarMinDurationSec: 4,
-  avatarMaxDurationSec: 12,
+  avatarMaxDurationSec: 15,
 
   // ---- Text-to-speech (Simon's voice) ----
   ttsModel: "text2speech_v2",
@@ -69,10 +69,12 @@ export const CLAUDE = {
  * avatar duration window with headroom. Blank lines in the script are hard cuts.
  */
 export const CHUNK = {
-  wordsPerSec: 2.6,
-  targetSec: 8,
-  minSec: 4.5,
-  maxSec: 11,
+  // Measured Brooks/ElevenLabs rate is ~2.2 wps (slower than the 2.6 estimate); tuned so
+  // chunks land ~7-10s of actual audio, comfortably inside the seedance clip window.
+  wordsPerSec: 2.2,
+  targetSec: 7,
+  minSec: 4,
+  maxSec: 10,
 };
 
 /** Caption styling (burned-in, karaoke word highlight). Tunable per iteration. */

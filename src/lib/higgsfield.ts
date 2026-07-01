@@ -155,7 +155,7 @@ export async function waitJob(
   }
 }
 
-async function download(url: string, outPath: string): Promise<void> {
+export async function download(url: string, outPath: string): Promise<void> {
   const res = await fetch(url);
   if (!res.ok) throw new Error(`download ${url} -> ${res.status}`);
   const buf = Buffer.from(await res.arrayBuffer());
@@ -190,32 +190,40 @@ export async function tts(text: string, outPath: string): Promise<void> {
   );
 }
 
-/** Talking-head lip-sync via seedance_2_0. imageIds = Simon refs, audioId = chunk voice. */
-export async function lipsync(opts: {
+interface LipsyncOpts {
   prompt: string;
   imageIds: string[];
   audioId: string;
   durationSec: number;
   resolution: string;
-  outPath: string;
-  onTick?: (s: JobStatus) => void;
-}): Promise<void> {
+}
+
+function lipsyncParams(opts: LipsyncOpts): Record<string, string | number> {
   const medias = [
     ...opts.imageIds.map((id) => ({ role: "image", data: { id, type: "media_input" } })),
     { role: "audio", data: { id: opts.audioId, type: "audio_input" } },
   ];
-  await generateToFile(
-    HF.avatarModel,
-    {
-      prompt: opts.prompt,
-      aspect_ratio: VIDEO.aspectRatio,
-      resolution: opts.resolution,
-      duration: Math.round(opts.durationSec),
-      medias: JSON.stringify(medias),
-    },
-    opts.outPath,
-    { timeoutMs: 20 * 60_000, intervalMs: 8000, onTick: opts.onTick },
-  );
+  return {
+    prompt: opts.prompt,
+    aspect_ratio: VIDEO.aspectRatio,
+    resolution: opts.resolution,
+    duration: Math.round(opts.durationSec),
+    medias: JSON.stringify(medias),
+  };
+}
+
+/** Talking-head lip-sync via seedance_2_0 (create + wait + download). */
+export async function lipsync(opts: LipsyncOpts & { outPath: string; onTick?: (s: JobStatus) => void }): Promise<void> {
+  await generateToFile(HF.avatarModel, lipsyncParams(opts), opts.outPath, {
+    timeoutMs: 20 * 60_000,
+    intervalMs: 8000,
+    onTick: opts.onTick,
+  });
+}
+
+/** Submit a lip-sync job and return its id immediately (for concurrent rendering). */
+export async function lipsyncCreate(opts: LipsyncOpts): Promise<string> {
+  return createJob(HF.avatarModel, lipsyncParams(opts));
 }
 
 /** Generate a concept/b-roll image. Optional Simon (or other) reference image ids. */
