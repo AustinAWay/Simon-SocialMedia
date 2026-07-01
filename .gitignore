@@ -1,0 +1,8 @@
+node_modules/
+runs/
+*.log
+.env
+.DS_Store
+# large source model refs are kept, but scratch renders are not
+tmp/
+scratch/

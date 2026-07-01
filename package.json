@@ -1,0 +1,25 @@
+{
+  "name": "simon-socialmedia",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Script -> fully edited vertical Simon explainer video (+ title & description) for YouTube Shorts / TikTok / Reels. All AI generation runs through the Higgsfield CLI.",
+  "bin": {
+    "simon": "./src/index.ts"
+  },
+  "scripts": {
+    "simon": "tsx src/index.ts",
+    "generate": "tsx src/index.ts generate",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.68.0",
+    "ffmpeg-static": "^5.2.0",
+    "ffprobe-static": "^3.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}
