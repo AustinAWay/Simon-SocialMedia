@@ -11,6 +11,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { tts, uploadMedia, lipsyncCreate, waitJob, download } from "../src/lib/higgsfield.js";
+import { ttsElevenLabs, hasElevenLabsKey } from "../src/lib/elevenlabs.js";
 import { ffmpeg, probeDuration, probeSize } from "../src/lib/ffmpeg.js";
 import { simonReferencePaths, buildSimonPrompt } from "../src/character/simon.js";
 import { PATHS } from "../src/config.js";
@@ -47,12 +48,13 @@ async function main() {
   log(`\n=== two-clip 4K · ${slug} · ${resolution} · ${clipDuration}s x2 ===`);
   beats.forEach((b, i) => log(`beat ${i}: "${b}"`));
 
-  // 1) ElevenLabs (Brooks) TTS per beat
-  log("\n① TTS (ElevenLabs / Brooks)…");
+  // 1) TTS per beat — direct ElevenLabs (Simon's exact voice) if a key is set, else Higgsfield Brooks
+  const useEl = hasElevenLabsKey();
+  log(`\n① TTS (${useEl ? "ElevenLabs direct — Brooks / eleven_v3 / Heimler settings" : "Higgsfield Brooks preset"})…`);
   const audio: { file: string; sec: number }[] = [];
   for (let i = 0; i < beats.length; i++) {
     const file = path.join(dir, "audio", `beat-${i}.mp3`);
-    if (!fs.existsSync(file)) await tts(beats[i]!, file);
+    if (!fs.existsSync(file)) await (useEl ? ttsElevenLabs(beats[i]!, file) : tts(beats[i]!, file));
     const sec = await probeDuration(file);
     audio.push({ file, sec });
     log(`   beat ${i}: ${sec.toFixed(2)}s`);
